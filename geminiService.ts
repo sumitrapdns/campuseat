@@ -1,9 +1,15 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { FoodItem } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+// Helper to safely get the API key from the environment
+const getAIClient = () => {
+  const apiKey = process.env.API_KEY || '';
+  return new GoogleGenAI({ apiKey });
+};
 
 export const getAIRecommendations = async (mood: string, menu: FoodItem[]) => {
+  const ai = getAIClient();
   const menuStr = JSON.stringify(menu.map(i => ({ id: i.id, name: i.name, tags: i.tags })));
   
   const response = await ai.models.generateContent({
@@ -43,6 +49,7 @@ export const getAIRecommendations = async (mood: string, menu: FoodItem[]) => {
 };
 
 export const analyzeDeliveryLocation = async (lat: number, lng: number) => {
+  const ai = getAIClient();
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash",
     contents: `Tell me about the area at latitude ${lat}, longitude ${lng}. Is it a university campus area, a residential zone, or a business district? Provide a one-sentence tip for a food delivery driver coming here. Do not mention any AI branding in your response.`,
@@ -62,6 +69,7 @@ export const analyzeDeliveryLocation = async (lat: number, lng: number) => {
 };
 
 export const getAIChatResponse = async (history: { role: string, parts: { text: string }[] }[], message: string) => {
+  const ai = getAIClient();
   const chat = ai.chats.create({
     model: 'gemini-3-flash-preview',
     config: {
